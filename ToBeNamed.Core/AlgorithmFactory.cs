@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using ToBeNamed.Core.Algorithms;
 using ToBeNamed.Core.Interfaces;
 
@@ -10,6 +14,7 @@ namespace ToBeNamed.Core
     {
         #region Member Variables 
 
+        private static Type[] _availableAlgorithmTypes = new Type[0];
 
         #endregion
         
@@ -17,7 +22,7 @@ namespace ToBeNamed.Core
         
         public static Type ActiveAlgorithmType { get; set; }
 
-        public static Type[] AvailableAlgorithmTypes { get; private set; }
+        public static Type[] AvailableAlgorithmTypes { get { return _availableAlgorithmTypes; } }
             
         #endregion
         
@@ -45,7 +50,10 @@ namespace ToBeNamed.Core
 
         #region Internal Methods
 
-
+        private static Type[] GetAlgorithmTypesFromAssembly(Assembly assembly)
+        {
+            return assembly.GetTypes().Where(t => t.IsClass && typeof (IPricingAlgorithm).IsAssignableFrom(t)).ToArray();
+        }
 
         #endregion
 
@@ -53,7 +61,42 @@ namespace ToBeNamed.Core
 
         public static void SetupAvailableAgorithmTypes()
         {
-            throw new NotImplementedException("SetupAvailableAlgorithmTypes is not currently implemented.");
+            var types = new List<Type>();
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                types.AddRange(GetAlgorithmTypesFromAssembly(a));
+            }
+            var dir = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)??string.Empty,"Algorithms");
+            if (!Directory.Exists(dir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                catch (Exception)
+                {
+                    _availableAlgorithmTypes = types.ToArray();
+                    return;
+                }
+            }
+            foreach (var s in Directory.GetFiles(dir, "*.dll"))
+            {
+                try
+                {
+                    var assembly = Assembly.LoadFile(s);
+                    if (assembly != null)
+                    {
+                        types.AddRange(GetAlgorithmTypesFromAssembly(assembly));
+                    }
+                }
+                catch (MissingMethodException)
+                {
+                }
+                catch (NullReferenceException)
+                {
+                }
+            }
+            _availableAlgorithmTypes = types.ToArray();
         }
 
         public static IPricingAlgorithm GetPricingAlgorithm()
