@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ToBeNamed.Core;
 using ToBeNamed.Core.Interfaces;
 
 namespace ToBeNamed.Tests
