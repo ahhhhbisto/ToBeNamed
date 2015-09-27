@@ -27,6 +27,13 @@ namespace ToBeNamed.Tests
             Assert.IsNotNull(obj);
             Assert.IsInstanceOfType(obj, typeof(IPricingAlgorithm));
             Assert.IsInstanceOfType(obj, typeof(LinearStockBasedPricingAlgorithm));
+
+            var product = TestObjects.TestProduct;
+            var price = obj.Calculate(product);
+            var expectedPrice = product.FloorPrice + ((product.CeilingPrice - product.FloorPrice)/2);
+            Assert.AreEqual(price, expectedPrice);
+            Assert.IsTrue(price > product.FloorPrice);
+            Assert.IsTrue(price < product.CeilingPrice);
         }
     }
 }

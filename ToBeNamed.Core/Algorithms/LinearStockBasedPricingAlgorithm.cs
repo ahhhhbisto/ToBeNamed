@@ -6,11 +6,10 @@ namespace ToBeNamed.Core.Algorithms
     {
         public double Calculate(IProduct product)
         {
-            double availablePerc = (double)product.CurrentStock/product.MaxStock;
-            double pricePoint = 100 - availablePerc;
+            long soldStock = product.MaxStock - product.CurrentStock;
 
-            double stockStep = (product.FloorPrice - product.CeilingPrice)/product.MaxStock;
-            double price = stockStep*pricePoint;
+            double stockStep = (product.CeilingPrice - product.FloorPrice)/product.MaxStock;
+            double price = product.FloorPrice + (stockStep*soldStock);
 
             if (price > product.CeilingPrice) price = product.CeilingPrice;
             if (price < product.FloorPrice) price = product.FloorPrice;
