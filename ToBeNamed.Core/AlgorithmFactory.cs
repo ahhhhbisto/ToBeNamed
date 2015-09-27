@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using ToBeNamed.Core.Algorithms;
 using ToBeNamed.Core.Interfaces;
 
@@ -58,11 +59,25 @@ namespace ToBeNamed.Core
 
         public static IPricingAlgorithm GetPricingAlgorithm()
         {
+            var defaultAlgorithm = new LinearStockBasedPricingAlgorithm();
             if (ActiveAlgorithmType == null)
             {
-                return new LinearStockBasedPricingAlgorithm();
+                return defaultAlgorithm;
             }
-            return new LinearStockBasedPricingAlgorithm();
+            if (typeof (IPricingAlgorithm).IsAssignableFrom(ActiveAlgorithmType) && ActiveAlgorithmType.IsClass)
+            {
+                IPricingAlgorithm obj = null;
+                try
+                {
+                    obj = ((IPricingAlgorithm) Activator.CreateInstance(ActiveAlgorithmType, true)) ?? defaultAlgorithm;
+                }
+                catch
+                {
+                    return defaultAlgorithm;
+                }
+                return obj;
+            }
+            return defaultAlgorithm;
         }
 
         #endregion
