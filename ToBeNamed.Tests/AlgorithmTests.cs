@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ToBeNamed.Core;
 using ToBeNamed.Core.Algorithms;
 using ToBeNamed.Core.Interfaces;
@@ -34,6 +36,22 @@ namespace ToBeNamed.Tests
             Assert.AreEqual(price, expectedPrice);
             Assert.IsTrue(price > product.FloorPrice);
             Assert.IsTrue(price < product.CeilingPrice);
+        }
+
+        [TestMethod]
+        public void TestAlgorithmDiscovery()
+        {
+            AlgorithmFactory.SetupAvailableAgorithmTypes();
+
+            Assert.IsTrue(AlgorithmFactory.AvailableAlgorithmTypes.Any(t => t == typeof(DummyAlgorithm))); // Check that available types contains our test type DummyAlgorithm
+
+            AlgorithmFactory.ActiveAlgorithmType = typeof (DummyAlgorithm);
+            var obj = AlgorithmFactory.GetPricingAlgorithm();
+
+            Assert.IsNotNull(obj);
+            Assert.IsInstanceOfType(obj, typeof(DummyAlgorithm));
+            var price = obj.Calculate(TestObjects.TestProduct);
+            Assert.AreEqual(price, 1);
         }
     }
 }

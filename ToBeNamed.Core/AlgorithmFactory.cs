@@ -10,15 +10,14 @@ namespace ToBeNamed.Core
     {
         #region Member Variables 
 
+
         #endregion
-
-
-
+        
         #region Properties
         
         public static Type ActiveAlgorithmType { get; set; }
 
-        public static Type AvailableAlgorithmTypes { get; private set; }
+        public static Type[] AvailableAlgorithmTypes { get; private set; }
             
         #endregion
         
